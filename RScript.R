@@ -48,11 +48,43 @@ raw_data<- read_tsv("C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Pr
 africa_ncdc <- read_excel("C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/african__data_ncdc.xlsx")
 #this is eqivalent to africa in the previous script
 
-#convert the data format to data frame
-sars_cov2_global <- as.data.frame(raw_data)
+#convert the ncdc data to data frame
 africa_ncdc <- as.data.frame(africa_ncdc)
 africa_ncdc$region <- as.character(africa_ncdc$region)
-africa_ncdc$country <- as.character(africa_ncdc$country)
+
+#Add a column name country and remove the region. This is to avoid confusion, as the world map has continents as region
+africa_ncdc$country <- africa_ncdc$region
+
+
+
+#make some calculations
+africa_ncdc <- africa_ncdc %>% mutate(popn = (Population/1000000), cases_per100H = (SARSCoV2_Cases/Population)*100000, tests_per100H = (T_Tests/Population)*100000, deaths_per100cases = (Total_Deaths/SARSCoV2_Cases)*100, recovery_per100cases = (T_Recovered/SARSCoV2_Cases)*100, positive_per100tests = (SARSCoV2_Cases/T_Tests)*100)
+
+#subset the african map from the world map
+africa_map <- map_data("world", region = africa_ncdc$region)
+
+#Add map data to the ncdc data
+africa_ncdc <- left_join(africa_map, africa_ncdc, by = "region")
+
+#remove the region column
+africa_ncdc <- africa_ncdc %>% select(-(region))
+
+
+#Convert the sarscov2 from worldometer to data frame
+sars_cov2_global <- as.data.frame(raw_data)
+
+#Add number of sequences submitted on GISAID by each country
+sequence_country <- sars_cov2_global %>% group_by (country) %>% summarise(sequences = n()) %>% mutate(percentage = round((sequences/sum(sequences))*100))
+sars_cov2_global <- left_join(sars_cov2_global, sequence_country, by = "country")
+
+#filter Africa data 
+sars_cov2_africa <- sars_cov2_global %>% filter (region == "Africa")
+
+africa_map_details <- left_join (africa_ncdc, sars_cov2_africa, by = "country", all = TRUE)
+
+africa_map_details <- africa_map_details %>% mutate(sequence_per_100cases = (sequences/SARSCoV2_Cases)*100)
+
+
 #To get number of sequences submitted to GISAID per continent
 sequence_continent <- sars_cov2_global %>% group_by (region) %>% summarise(sequences = n()) %>% mutate(percentage = round((sequences/sum(sequences))*100))
 next_strain_clade_continent <- sars_cov2_global %>% group_by(region, Nextstrain_clade) %>% summarise(Number = n()) %>% mutate(percentage = round((Number/sum(Number))*100))
@@ -183,37 +215,6 @@ lineage_4th_top_1_bar <- ggplot(lineage_4th_top_1, aes(y = reorder(pangolin_line
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/continent_4th_top1_lineage_bar.pdf")
 
 
-###This is now to focus on Africa
-#Add a new column country to africa to align with the global data. This is because
-# the map data has countries stated as "region" while GISAID data has countries stated
-# as region
-africa_ncdc$country <- africa_ncdc$region
-africa_ncdc <- africa_ncdc %>% mutate(popn = (Population/1000000), cases_per100H = (SARSCoV2_Cases/Population)*100000, tests_per100H = (T_Tests/Population)*100000, deaths_per100cases = (Total_Deaths/SARSCoV2_Cases)*100, recovery_per100cases = (T_Recovered/SARSCoV2_Cases)*100, positive_per100tests = (SARSCoV2_Cases/T_Tests)*100)
-# Have a comprehensive data containing almost all information except centroids
-sars_cov2_global_mega <- merge(sars_cov2_global, africa_ncdc, by = "country", all.x = TRUE)
-sars_cov2_global_mega <- sars_cov2_global_mega %>% mutate(sequence_per_100cases = (sequences/SARSCoV2_Cases)*100)
-africa_data4map <- sars_cov2_global_mega %>% filter(region.x == "Africa")
-
-#rename "country" as region because of the map database which used region for country
-africa_data4map$region <- africa_data4map$country
-##This to subset African region from the world using the listed coutries
-africa_map <- map_data("world", region = africa_ncdc$region)
-
-#Get a Centroid for African countries
-african_countries_centriods <- africa_map %>% group_by(region) %>% summarise(long = mean(range(long)), lat = mean(range(lat)))
-
-africa_centriods <- left_join(african_countries_centriods, africa_data4map, by = 'region')
-
-
-#Join the other SARSCoV2 data to the long format of Map information 
-africa_map_details <- left_join(africa_map, africa_data4map, "region")
-
-#save the data for easy reference later rather than loading the raw data everytime
-save(africa_map_details, sars_cov2_global_mega, file = "sars_cov2_complete_data.Rdata")
-
-#To load it subsequently:
-#load("sars_cov2_complete_data.Rdata")
-
 ###### SPATIAL ANALYSIS OF SARS-COV2 IN DIFFERENT AFRICAN COUNTRIES ##########
 #Africa Map showing SARS-CoV2 sequences submitted in GISAID from various African countries.
 #MAP
@@ -221,7 +222,7 @@ ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = sequences), color = 'black') +
   coord_map("bonne", parameters = 45) +
   labs(title = "SARS-CoV2 sequences submitted in GISAID from Africa", caption = "Source: GISAID") +
-  scale_fill_continuous(name = "Sequences", low = "white", high = "red", 
+  scale_fill_continuous(name = "Sequences", low = "white", high = "green", 
                         limits = c(0, 3000), breaks = c(0, 500, 1000, 2000, 3000)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_sequences_on_GISAID_Map.pdf")   
@@ -231,8 +232,8 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = sequence_per_100cases), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "SARS-CoV2 sequences submitted per 100 cases reported", caption = "Source: GISAID, NCDC and worldometer") +
-  scale_fill_continuous(name = "Sequences", low = "white", high = "red", 
+  labs(title = "SARS-CoV2 sequences submitted per 100 cases reported", caption = "Source: GISAID and worldometer") +
+  scale_fill_continuous(name = "Sequences", low = "white", high = "green", 
                         limits = c(0, 10), breaks = c(0, 1, 2.5, 5.0, 7.5, 10)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_seqs_per100_cases_GISAID_Map.pdf")   
@@ -242,9 +243,9 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = SARSCoV2_Cases), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "SARS-CoV2 in Africa", caption = "Source: worldometer and NCDC") +
+  labs(title = "SARS-CoV2 reported cases in Africa", caption = "Source: worldometer") +
   scale_fill_continuous(name = "Cases", low = "white", high = "red", 
-                        limits = c(0, 500000), breaks = c(0, 500, 1000, 10000, 200000, 500000)) +
+                        limits = c(0, 800000), breaks = c(0, 10000, 200000, 500000)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_cases_Map.pdf")   
 
@@ -253,9 +254,9 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = Total_Deaths), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "Deaths from SARS-CoV2 in Africa", caption = "Source: worldometer and NCDC") +
-  scale_fill_continuous(name = "Cases", low = "white", high = "red", 
-                        limits = c(0, 30000), breaks = c(0, 500, 1000, 5000, 10000, 20000, 30000)) +
+  labs(title = "Deaths from SARS-CoV2 in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Deaths", low = "white", high = "red", 
+                        limits = c(0, 30000), breaks = c(0, 500, 5000, 10000, 20000, 30000)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_Deaths_Map.pdf")   
 
@@ -263,8 +264,8 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = tests_per100H), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer and NCDC") +
-  scale_fill_continuous(name = "Tests", low = "white", high = "red", 
+  labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Tests", low = "white", high = "blue", 
                         limits = c(0, 14000), breaks = c(0, 300, 500, 1000, 5000, 10000, 14000)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
@@ -273,8 +274,8 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = deaths_per100cases), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "Deaths per 100 SARS-CoV2 cases in Africa", caption = "Source: worldometer and NCDC") +
-  scale_fill_continuous(name = "Tests", low = "white", high = "red", 
+  labs(title = "Deaths per 100 SARS-CoV2 cases in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Deaths", low = "white", high = "red", 
                         limits = c(0, 10), breaks = c(0, 1, 2, 3, 4, 5, 6, 10)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_deaths_per100cases_Map.pdf")   
@@ -284,7 +285,7 @@ ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = recovery_per100cases), color = 'black') +
   coord_map("bonne", parameters = 45) +
   labs(title = "Recovery per 100 SARS-CoV2 cases", caption = "Source: worldometer and NCDC") +
-  scale_fill_continuous(name = "Recovery", low = "white", high = "red", 
+  scale_fill_continuous(name = "Recovery", low = "white", high = "green", 
                         limits = c(0, 100), breaks = c(0, 25, 50, 75, 100)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_recovery_per100cases_Map.pdf")   
@@ -294,8 +295,8 @@ ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_
 ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = positive_per100tests), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  labs(title = "Number of SARS-CoV2 positive test per 100 persons tested", caption = "Source: worldometer and NCDC") +
-  scale_fill_continuous(name = "Recovery", low = "white", high = "red", 
+  labs(title = "Number of SARS-CoV2 positive test per 100 persons tested", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Number positive", low = "white", high = "red", 
                         limits = c(0, 20), breaks = c(0, 1, 5, 10, 15, 20)) +
   theme_void()
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_positive_per100tests_Map.pdf")   
