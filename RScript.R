@@ -155,13 +155,22 @@ lineage_top_2 <- pangolin_lineage_continent %>% filter(N >= 1238.06)
 aspect_ratio <- 2.5
 ######## Charts at the Continental levels
 #Figure 1
-#Bar chart
+#Bar chart (pdf)
 sequences_continent_bar <- ggplot(sequence_continent, aes(y = reorder(region, sequences), x = sequences))  +
   geom_bar(stat = "identity") +
   geom_text(aes(label = paste0(percentage, "%")), position = position_dodge(width = 1),vjust = 0.5) +
   labs(title = "SARS-CoV-2 sequences submitted on GISAID", y = "Continents", x = "Number of sequences submitted", caption = "Source: GISAID" ) +
   theme(plot.title = element_text(size = 15))
-ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/continent_sequences_bar.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Continent_sequences_bar.pdf", height = 120, width = 200, units = 'mm')
+
+#Bar chart (jpg)
+sequences_continent_bar <- ggplot(sequence_continent, aes(y = reorder(region, sequences), x = sequences))  +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0(percentage, "%")), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "SARS-CoV-2 sequences submitted on GISAID", y = "Continents", x = "Number of sequences submitted", caption = "Source: GISAID" ) +
+  theme(plot.title = element_text(size = 15))
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Continent_sequences_bar.jpg", height = 120, width = 200, units = 'mm')
+
 
 ####NextStrain Chart
 #Figure 2A
@@ -181,11 +190,15 @@ fig2b <- ggplot(africa_nstrain_clade, aes(y = reorder(Nextstrain_clade, N), x = 
   labs(y = "Next Strain Clades", x = "Number of sequences submitted") 
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/africa_nxtrain_bar.pdf")
 #Figure 2
-pdf("updated_output/clade_diversity.pdf")
+pdf("updated_output/Clade_diversity.pdf")
 grid.arrange(fig2a, fig2b, nrow = 2, top = "NextStrain diversity",
              bottom = "Source: GISAID")
 dev.off()
 
+jpeg("updated_output/Clade_diversity.jpg")
+grid.arrange(fig2a, fig2b, nrow = 2, top = "NextStrain diversity",
+             bottom = "Source: GISAID")
+dev.off()
 ##Top 1% Pango lineage diversity
 #Figure 3
 lineage_diversity_top_1 <- ggplot(lineage_top_1, aes(y = reorder(pangolin_lineage, N), x = N)) +
@@ -193,7 +206,15 @@ lineage_diversity_top_1 <- ggplot(lineage_top_1, aes(y = reorder(pangolin_lineag
   #geom_text(aes(label = paste0(round(percentage), "%")), position = position_dodge(width = 1),vjust = 0.5) +
   labs(title = "Top 1% lineage diversity in the continents", y = "Pango lineage", x = "Number of sequences", caption = "Source: GISAID") +
   facet_wrap(~ region) 
-ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/continent_top1_lineage_bar.pdf", height = 120, width = 200, units = 'mm' )
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Continent_top1_lineage_bar.pdf", height = 120, width = 200, units = 'mm' )
+
+
+lineage_diversity_top_1 <- ggplot(lineage_top_1, aes(y = reorder(pangolin_lineage, N), x = N)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  #geom_text(aes(label = paste0(round(percentage), "%")), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "Top 1% lineage diversity in the continents", y = "Pango lineage", x = "Number of sequences", caption = "Source: GISAID") +
+  facet_wrap(~ region) 
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Continent_top1_lineage_bar.jpg", height = 120, width = 200, units = 'mm' )
 
 ##Top Pango lineage diversity in Africa
 #Figure 4
@@ -245,7 +266,7 @@ afr_data <- na.omit(df) %>% filter (region == "Africa") %>% select(date, pangoli
 #plot the graph 
 #Stack chart area1
 fig4b <- ggplot(afr_data, aes(x = date, y = percentage, fill = pangolin_lineage)) +
-  geom_area(size = 1, color = 'white') +
+  geom_area(size = 0.3, color = 'white') +
   #labs(title = "The trend of the top 5 circulating SARS-CoV-2 lineage in Africa", y = "Percentage", x = "Date") + 
 labs(y = "Percentage", x = "Date") 
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/fig4c_africa_prop_stacked_area1.pdf")
@@ -259,33 +280,61 @@ labs(title = "The trend of the top 5 circulating SARS-CoV-2 lineage in Africa", 
 
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/africa_prop_stacked_bar1.pdf")
 #Figure 4 charts Lineage Diversity in Africa
-pdf("updated_output/Fig4_pango_lineage.pdf")
+pdf("updated_output/Pango_lineage.pdf")
 grid.arrange(fig4a, fig4b, nrow = 2, top = "Pango lineage diversity in Africa", bottom = textGrob("Source: GISAID"))
 dev.off()
 
- 
+jpeg("updated_output/Pango_lineage.jpg")
+grid.arrange(fig4a, fig4b, nrow = 2, top = "Pango lineage diversity in Africa", bottom = textGrob("Source: GISAID"))
+dev.off()
+
 ###############################
+##To calculate global average et al
+#Group the sars-cov2 data
+continental_table <- na.omit(sars_cov2_global) %>% group_by(region) %>% summarise(sequences = sum(sequences))
+#add population
+continental_table$population <- c(4641054775, 1340598147, 747636026, 592072212, 430759766, 43111704)
+#global mean per 100H
+continental_table <- continental_table %>% mutate(per100H = (sequences/population)*100000)
+global_mean_per100H <-  (sum(continental_table$sequences)/sum(continental_table$population))*100000
+continental_table <- as.data.frame(continental_table)
+##chart of number of persons infected per 100H
+
+Figure5_absolute_cases <- ggplot(continental_table, aes(x = reorder(region, sequences), y = sequences))  +
+  geom_bar(stat = "identity", fill = 'orange') +
+  geom_text(aes(label = round(sequences)), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "Absolute number of reported COVID-19 cases across the continent", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) 
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Absolute_continents.pdf", height = 120, width = 200, units = 'mm')
+
+Figure5_absolute_cases <- ggplot(continental_table, aes(x = reorder(region, sequences), y = sequences))  +
+  geom_bar(stat = "identity", fill = 'orange') +
+  geom_text(aes(label = round(sequences)), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "Absolute number of reported COVID-19 cases across the continent", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) 
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Absolute_continents.jpg", height = 120, width = 200, units = 'mm')
+
+
+Figure6_cases_per100H <- ggplot(continental_table, aes(x = reorder(region, per100H), y = per100H))  +
+  geom_bar(stat = "identity", fill = 'orange') +
+  geom_text(aes(label = round(per100H)), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "Number of reported COVID-19 cases per 100,000 population across the continents", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) +
+  geom_hline(yintercept = global_mean_per100H, col = 'red', size = 2)
+
+#theme(plot.title = element_text(size = 15))
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Cases_per100H_continents.pdf", height = 120, width = 200, units = 'mm')
+
+Figure6_cases_per100H <- ggplot(continental_table, aes(x = reorder(region, per100H), y = per100H))  +
+  geom_bar(stat = "identity", fill = 'orange') +
+  geom_text(aes(label = round(per100H)), position = position_dodge(width = 1),vjust = 0.5) +
+  labs(title = "Number of reported COVID-19 cases per 100,000 population across the continents", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) +
+  geom_hline(yintercept = global_mean_per100H, col = 'red', size = 2)
+
+#theme(plot.title = element_text(size = 15))
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Cases_per100H_continents.jpg", height = 120, width = 200, units = 'mm')
 
 
 
 
-### GISAID 
-#GISAID_clade_continent <- na.omit(GISAID_clade_continent)
-#GISAID_clade_continent_bar <- ggplot(GISAID_clade_continent, aes(y = GISAID_clade, x = N)) +
- # geom_bar(stat = "identity", fill = "steelblue") +
-#  geom_text(aes(label = paste0(round(percentage), "%")), position = position_dodge(width = 1),vjust = 0.5) +
- # labs(title = "GISAID clade diversity in the continents", y = "GISAID Clade", x = "Number of sequences", caption = "Source: gisaid") +
-#  facet_wrap(~ region) 
-#ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/continent_GISAID_bar.pdf")
-
-### The Pangolin lineages are too many. I decided to get the quantiles:
-
-
-
-###### SPATIAL ANALYSIS OF SARS-COV2 IN DIFFERENT AFRICAN COUNTRIES ##########
-##Figure 5
-####### SARS-CoV2 Cases in Africa
-fig5a <- ggplot(africa_map_details) +
+fig7a <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = SARSCoV2_Cases), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "Absolute number of COVID-19 reported cases in African countries", caption = "Source: worldometer") +
@@ -295,7 +344,7 @@ fig5a <- ggplot(africa_map_details) +
   theme_void()
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_cases_Map.pdf")   
 
-fig5b <- ggplot(africa_map_details) +
+fig7b <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = cases_per100H), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "COVID-19 reported cases per 100,000 \n population in African countries", caption = "Source: worldometer") +
@@ -304,15 +353,19 @@ fig5b <- ggplot(africa_map_details) +
                         limits = c(0, 1500), breaks = c(0, 500, 1000, 1500)) +
   theme_void()
 
-#Figure 5
-pdf("updated_output/cases_in_africa_map.pdf")
-grid.arrange(fig5a, fig5b, nrow = 1, top ="COVID-19 cases reported in African countries")
+#Figure 7
+pdf("updated_output/Cases_in_africa_map.pdf")
+grid.arrange(fig7a, fig7b, nrow = 1, top ="COVID-19 cases reported in African countries")
+dev.off()
+
+jpeg("updated_output/Cases_in_africa_map.jpg")
+grid.arrange(fig7a, fig7b, nrow = 1, top ="COVID-19 cases reported in African countries")
 dev.off()
 
 #Africa Map showing SARS-CoV2 sequences submitted in GISAID from various African countries.
 #MAP
-#Figure 6A
-fig6a <- ggplot(africa_map_details) +
+#Figure 8
+fig8a <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = sequences), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "SAR-CoV-2 Sequences submitted to GISAID from African countries", caption = "Source: GISAID") +
@@ -324,7 +377,7 @@ fig6a <- ggplot(africa_map_details) +
 
 ########Sequences submitted per 1000 Cases reported
 #Figure 6B
-fig6b <- ggplot(africa_map_details) +
+fig8b <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = sequence_per_100cases*10), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "SARS-CoV2 sequences submitted per 1000 cases reported", caption = "Source: GISAID and worldometer") +
@@ -333,40 +386,50 @@ fig6b <- ggplot(africa_map_details) +
   theme_void()
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_seqs_per100_cases_GISAID_Map.pdf")   
 
-#Figure 6
-pdf("updated_output/africa_sequeunces_submitted_map.pdf")
-grid.arrange(fig6a, fig6b, nrow = 1, top = "Sequences submitted to GISAID from African countries", bottom = "Source: GISAID and worldometer")
+#Figure 8
+pdf("updated_output/Africa_sequeunces_submitted_map.pdf")
+grid.arrange(fig8a, fig8b, nrow = 1, top = "Sequences submitted to GISAID from African countries", bottom = "Source: GISAID and worldometer")
 dev.off()
 
-#Figure 7
-#No of deaths
+jpeg("updated_output/Africa_sequeunces_submitted_map.jpg")
+grid.arrange(fig8a, fig8b, nrow = 1, top = "Sequences submitted to GISAID from African countries", bottom = "Source: GISAID and worldometer")
+dev.off()
+
+###Deaths
+#Figure 9
+
 ##### Total Deaths from SARS-CoV2
-fig7a <- ggplot(africa_map_details) +
+fig9a <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = Total_Deaths), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  #labs(title = "Deaths from SARS-CoV2 in Africa", caption = "Source: worldometer") +
+  #labs(title = "Deaths from SARS-CoV-2 in Africa", caption = "Source: worldometer") +
   scale_fill_continuous(name = "Deaths", low = "white", high = "red", 
                         limits = c(0, 30000), breaks = c(0, 500, 5000, 10000, 20000, 30000)) +
   theme_void()
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_Deaths_Map.pdf")   
-#figure 7b
-fig7b <- ggplot(africa_map_details) +
+
+#figure 9b Deaths per 1000 cases
+fig9b <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = deaths_per100cases*10), color = 'black') +
   coord_map("bonne", parameters = 45) +
-  #labs(title = "Deaths per 1000 SARS-CoV2 cases in Africa", caption = "Source: worldometer") +
+  #labs(title = "Deaths per 1000 SARS-CoV-2 cases in Africa", caption = "Source: worldometer") +
   scale_fill_continuous(name = "Deaths", low = "white", high = "red", 
                         limits = c(0, 100), breaks = c(0, 10, 20, 30, 40, 50, 60, 100)) +
   theme_void()
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_deaths_per100cases_Map.pdf")   
-#Figure 7
-pdf("updated_output/africa_reported_deaths_map.pdf")
-grid.arrange(fig7a, fig7b, nrow = 1, top = "Reported deaths from SARS-CoV2 in African countries", bottom = "worldometer")
+#Figure 9
+pdf("updated_output/Africa_reported_deaths_map.pdf")
+grid.arrange(fig9a, fig9b, nrow = 1, top = "Reported deaths from SARS-CoV-2 in African countries", bottom = "worldometer")
+dev.off()
+
+jpeg("updated_output/Africa_reported_deaths_map.jpg")
+grid.arrange(fig9a, fig9b, nrow = 1, top = "Reported deaths from SARS-CoV-2 in African countries", bottom = "worldometer")
 dev.off()
 ######## Total Tests per 100,000 Population
 
-#Figure 8a
+#Figure 10
 #Tests
-fig8a <- ggplot(africa_map_details) +
+fig10a <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = T_Tests), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
@@ -376,31 +439,31 @@ fig8a <- ggplot(africa_map_details) +
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
 
 
-#Figure 8b
+#Figure 10b
 #Test per 100H
 
-fig8b <- ggplot(africa_map_details) +
+fig10b <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = tests_per100H), color = 'black') +
   coord_map("bonne", parameters = 45) +
   #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
   scale_fill_continuous(name = "Tests", low = "white", high = "blue", 
-                        limits = c(0, 16000), breaks = c(0, 1000, 5000, 10000, 15000)) +
+                        limits = c(0, 25000), breaks = c(0, 1000, 5000, 10000, 15000, 20000, 25000)) +
   theme_void()
 #ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
 
-pdf("updated_output/fig8_africa_tests_map.pdf")
-grid.arrange(fig8a, fig8b, nrow = 1, top = "SARS-CoV-2 tests conducted in African countries", bottom = "worldometer")
+pdf("updated_output/Africa_tests_map.pdf")
+grid.arrange(fig10a, fig10b, nrow = 1, top = "SARS-CoV-2 tests conducted in African countries", bottom = "worldometer")
 dev.off()
 
-######## Deaths per 100 cases
-
-
+jpeg("updated_output/Africa_tests_map.jpg")
+grid.arrange(fig10a, fig10b, nrow = 1, top = "SARS-CoV-2 tests conducted in African countries", bottom = "worldometer")
+dev.off()
 
 ######## Positive per 1000 Tests
-#figure 9
+#figure 11
 #Positive per 1000
 
-Positive_per1000 <- ggplot(africa_map_details) +
+Figure11_Positive_per1000 <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
   coord_map("bonne", parameters = 45) +
   labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
@@ -408,9 +471,23 @@ Positive_per1000 <- ggplot(africa_map_details) +
   scale_fill_continuous(name = "Positive tests", low = "white", high = "red", 
                         limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
   theme_void()
-ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/fig9_Africa_positive_per_1000_Map.pdf")   
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_positive_per_1000_Map.pdf")   
+
+Figure11_Positive_per1000 <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
+  #labs(caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Positive tests", low = "white", high = "red", 
+                        limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
+  theme_void()
+ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_positive_per_1000_Map.jpg")   
 
 
+##To list all the Pango lineages circulating in Africa
+write.csv(africa_pangolin_lineage, file = "updated_output/pango_lineages_africa.csv", sep = "")
+
+#################################END of FIGURES in the Manuscript#
 
 ########## Recovery per 100 cases
 ggplot(africa_map_details) +
@@ -423,68 +500,11 @@ ggplot(africa_map_details) +
 ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_recovery_per100cases_Map.pdf")   
 
 
-###This is an after thought analysis hence we had to use the raw data again
-##Plot a mosaic plots of Nextstrain clades
-#color
-pdf("updated_output/nclade_mosaic.pdf")
-mosaicplot(~ region.x + Nextstrain_clade, data = sars_cov2_global_mega,
-           shade = TRUE, xlab ="Continent", ylab = "Nextstrain clades", main = "Distribution of Nextstrain clades")
-dev.off()
-
-#grey
-pdf("updated_output/nclade_mosaic2.pdf")
-mosaicplot(~ region.x + Nextstrain_clade, data = sars_cov2_global_mega,
-           shade = FALSE, xlab ="Continent", ylab = "Nextstrain clades", main = "Distribution of Nextstrain clades")
-dev.off()
-
-## Plot a mosaic plot of GISAID clade
-#color
-pdf("updated_output/GISAIDclade_mosaic.pdf")
-mosaicplot(~ region.x + GISAID_clade, data = sars_cov2_global_mega,
-           shade = TRUE, xlab ="Continent", ylab = "GISAID clades", main = "Distribution of GISAID clades")
-dev.off()
-
-#grey
-pdf("updated_output/GISAIDclade_mosaic2.pdf")
-mosaicplot(~ region.x + GISAID_clade, data = sars_cov2_global_mega,
-           shade = FALSE, xlab ="Continent", ylab = "GISAID clades", main = "Distribution of GISAID clades")
-dev.off()
-
-
-
-## Plot a mosaic plot of pangolin lineage
-#color
-pdf("updated_output/lineage_mosaic.pdf")
-mosaicplot(~ region.x + pangolin_lineage, data = sars_cov2_global_mega,
-           shade = TRUE, xlab ="Continent", ylab = "Lineage", main = "Distribution of SARS-CoV2 lineages in the continents")
-dev.off()
-
-#grey
-pdf("updated_output/lineage_mosaic2.pdf")
-mosaicplot(~ region.x + pangolin_lineage, data = sars_cov2_global_mega,
-           shade = FALSE, xlab ="Continent", ylab = "Lineage", main = "Distribution of SARS-CoV2 lineages in the continents")
-dev.off()
-
-#### Plot mosaic plots for GISAID and Nextstrain clades
-#color
-pdf("updated_output/GISandNclade_mosaic.pdf")
-mosaicplot(~ region.x + Nextstrain_clade + GISAID_clade, data = sars_cov2_global_mega,
-           shade = TRUE, xlab ="Continent", ylab = "Clades", main = "Distribution of GISAID and Nextstrain clades")
-dev.off()
-
-#grey
-pdf("updated_output/GISandNclade_mosaic2.pdf")
-mosaicplot(~ region.x + Nextstrain_clade + GISAID_clade, data = sars_cov2_global_mega,
-           shade = FALSE, xlab ="Continent", ylab = "Clades", main = "Distribution of GISAID and Nextstrain clades")
-dev.off()
-
-
-
-
-
 
 ###################################END OF AFRICA SCRIPT###############################
 #Supplementary Figures
+
+
 
 lineage_2nd_top_1 <- pangolin_lineage_continent %>% filter(N < 3213.9 & N >= 1238.06)
 lineage_3rd_top_1 <- pangolin_lineage_continent %>% filter(N < 1238.06 & N >= 849)
@@ -556,7 +576,7 @@ ggplot(afr_data, aes(x = date, y = percentage, fill = pangolin_lineage)) +
     
 ########################################################  
 ######## filtering data for a specific country
-specify_country <- "South Africa"    
+specify_country <- "Mauritius"    
 africa_map_details %>% filter(country == specify_country) %>% select(country, SARSCoV2_Cases, cases_per100H,sequences, sequence_per_100cases, Total_Deaths, deaths_per100cases, T_Tests, tests_per100H, positive_per100tests) %>% head() %>% View()
 ABC<- africa_map_details %>% select(country, SARSCoV2_Cases, cases_per100H,sequences, sequence_per_100cases, Total_Deaths, deaths_per100cases, T_Tests, tests_per100H, positive_per100tests)
 write.csv(ABC, file = "updated_output/Afr_data.csv", sep = "")
@@ -577,30 +597,6 @@ write.table(Nov_Dec, file = "updated_output/Nov_Dec_data.txt", sep =  "")
 write.csv(March, file = "updated_output/March_data.csv", sep =  "")
 write.csv(Nov_Dec, file = "updated_output/Nov_Dec_data.csv", sep =  "")
 
-##To calculate global average et al
-#Group the sars-cov2 data
-continental_table <- na.omit(sars_cov2_global) %>% group_by(region) %>% summarise(sequences = sum(sequences))
-#add population
-continental_table$population <- c(4641054775, 1340598147, 747636026, 592072212, 430759766, 43111704)
-#global mean per 100H
-continental_table <- continental_table %>% mutate(per100H = (sequences/population)*100000)
-global_mean_per100H <-  (sum(continental_table$sequences)/sum(continental_table$population))*100000
-continental_table <- as.data.frame(continental_table)
-##chart of number of persons infected per 100H
-cases_per100H <- ggplot(continental_table, aes(x = reorder(region, per100H), y = per100H))  +
-  geom_bar(stat = "identity", fill = 'orange') +
-  geom_text(aes(label = round(per100H)), position = position_dodge(width = 1),vjust = 0.5) +
-  labs(title = "Number of reported COVID-19 cases per 100,000 population across the continents", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) +
-  geom_hline(yintercept = global_mean_per100H, col = 'red', size = 2)
-  
-#theme(plot.title = element_text(size = 15))
-ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/fig11_cases_per100H_continents.pdf", height = 120, width = 200, units = 'mm')
-
-absolute_cases <- ggplot(continental_table, aes(x = reorder(region, sequences), y = sequences))  +
-  geom_bar(stat = "identity", fill = 'orange') +
-  geom_text(aes(label = round(sequences)), position = position_dodge(width = 1),vjust = 0.5) +
-  labs(title = "Absolute number of reported COVID-19 cases across the continent", y = "Number of cases", x = "Continents", caption = "Source: worldometer" ) 
-  ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/fig12_absolute_continents.pdf", height = 120, width = 200, units = 'mm')
 
 
 ####### Used for writing of methods
@@ -613,4 +609,42 @@ ggplot(africa_map_details, aes(y = reorder(region, SARSCoV2_Cases), x = SARSCoV2
   
   
   
-######
+
+### GISAID 
+#GISAID_clade_continent <- na.omit(GISAID_clade_continent)
+#GISAID_clade_continent_bar <- ggplot(GISAID_clade_continent, aes(y = GISAID_clade, x = N)) +
+# geom_bar(stat = "identity", fill = "steelblue") +
+#  geom_text(aes(label = paste0(round(percentage), "%")), position = position_dodge(width = 1),vjust = 0.5) +
+# labs(title = "GISAID clade diversity in the continents", y = "GISAID Clade", x = "Number of sequences", caption = "Source: gisaid") +
+#  facet_wrap(~ region) 
+#ggsave(file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/continent_GISAID_bar.pdf")
+
+### The Pangolin lineages are too many. I decided to get the quantiles:
+
+
+
+###### SPATIAL ANALYSIS OF SARS-COV2 IN DIFFERENT AFRICAN COUNTRIES ##########
+##Figure 5
+####### SARS-CoV2 Cases in Africa
+
+Nigeria_data <- africa_map_details %>% filter(country == "Nigeria") %>% group_by(strain)  %>%select (pangolin_lineage, strain, Nextstrain_clade,  GISAID_clade, length, age, date, date_submitted)
+Ghana_data <- africa_map_details %>% filter(country == "Ghana")  %>% group_by(strain) %>% select (pangolin_lineage, strain, Nextstrain_clade,  GISAID_clade, length, age, date, date_submitted)
+
+strains_Nigeria <- unique(Nigeria_data$strain)
+strains_Ghana <- unique(Ghana_data$strain)
+
+length(strains_Nigeria) #There 223 sequences submitted from Nigeria in GISAID
+length(strains_Ghana) #There 70 sequences submitted from Ghana in GISAID
+#Export Ghana and Nigeria data
+write.csv(Nigeria_data, file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/new_nigeria_data_gisaid.csv")
+write.csv(Ghana_data, file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/new_ghana_data_gisaid.csv")
+
+#Classify the Sequence into Regions/State
+write.csv(strains_Nigeria, file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updated_strains_nigeria_gisaid.csv")
+write.csv(strains_Ghana, file = "C:/Users/YinkaOkoh/Desktop/Bioinformatics_Data/SARS-CoV2_Project_2021/updated_strains_ghana_gisaid.csv")
+
+library(stringr)
+#use str_count(dataset, "pattern") to indentify the patterns
+sum(str_count(strains_Nigeria, "AB")) #enter the state code of each to know the number
+
+##Commit this and note to update later
