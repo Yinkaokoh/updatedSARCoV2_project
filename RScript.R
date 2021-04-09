@@ -707,7 +707,9 @@ OWID_data <- as.data.frame(OWID_data)
 ## Add cases, death and test per 100K population
 OWID_data <- OWID_data %>% mutate(Cases_100K = (Cases/Population)*100000, Deaths_100K = (Deaths/Population)*100000, Tests_100K = (Tests/Population)*100000)
 
-global_cases_per100K <- (sum(OWID_data$Cases)/sum(OWID_data$Population))*100000
+global_cases_per100K <- (sum(OWID_data$Cases)/sum(OWID_data$Population))*100000  ## This is 894.84
+global_deaths_per100K <- (sum(OWID_data$Deaths)/sum(OWID_data$Population))*100000 ## This 18.73
+
 
 
 
@@ -715,28 +717,29 @@ global_cases_per100K <- (sum(OWID_data$Cases)/sum(OWID_data$Population))*100000
 #  Per 100,000 Cases in each Continent with Global Mean horizontal line 
 # using the new data from our world in data
 
-ggplot(OWID_data, aes(x = reorder(continent, Cases_100K), y = Cases_100K))  +
-  geom_bar(stat = "identity", fill = 'steelblue') +
-  geom_text(aes(label = round(Cases_100K)), position = position_dodge(width = 1),vjust = 0.5) +
-  labs(title = "COVID-19 cases per 100,000 across the continent", y = "Number of cases", x = "Continents") +
-geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1)
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.pdf", height = 120, width = 200, units = 'mm')
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.jpg", height = 120, width = 200, units = 'mm')
+g#gplot(OWID_data, aes(x = reorder(continent, Cases_100K), y = Cases_100K))  +
+  #geom_bar(stat = "identity", fill = 'steelblue') +
+  #geom_text(aes(label = round(Cases_100K)), position = position_dodge(width = 1),vjust = 0.5) +
+  #labs(title = "COVID-19 cases per 100,000 across the continent", y = "Number of cases", x = "Continents") +
+#geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1)
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.pdf", height = 120, width = 200, units = 'mm')
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.jpg", height = 120, width = 200, units = 'mm')
 
 
-## Per 100,000 Cases with deaths
+## Per 100,000 Cases and Deaths for each continent and globally 
 ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
   geom_bar(stat = "identity") +
-  geom_point(aes(y = Deaths_100K*46), size = 5, color = "orange") +
+  geom_point(aes(y = Deaths_100K*40), size = 5, color = "orange") +
   geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1) +
+  geom_hline(yintercept = global_deaths_per100K*40, col = 'orange', size = 1) + 
   scale_y_continuous("Cases per 100,000", sec.axis = sec_axis(~ . /46, name = "Death per 100,000")) +
   theme(
     axis.title.y = element_text( size=13),
     axis.title.y.right = element_text(color = "orange", size=13)
   ) +
   labs(x = "Continent")
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.pdf", height = 120, width = 200, units = 'mm')
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.jpg", height = 120, width = 200, units = 'mm')
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.pdf", height = 140, width = 200, units = 'mm')
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.jpg", height = 140, width = 200, units = 'mm')
 
 ## Is there a correlation between some parameters?
 library(corrplot)
