@@ -1,6 +1,6 @@
+## Epidemiology and genetic diversity of SARS-CoV-2 lineages circulating in Africa
 
-# SARS-CoV2 Project in collaboration with Nidia, Elisha,
-#Nicholas et al on SARS-CoV2 in Africa
+# A Journal article SARS-CoV2 
 # Script written by OKOH Olayinka Sunday
 # 19th March, 2021
 
@@ -157,7 +157,244 @@ lineage_top_2 <- pangolin_lineage_continent %>% filter(N >= 1238.06)
 
 aspect_ratio <- 2.5
 
-###############################    CHARTS    ##################
+#Final Figures used
+##Figure 1 on page 22:Sequences from African countries submitted to GISAID.  
+
+fig1a <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = sequences), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "SAR-CoV-2 Sequences submitted to GISAID from African countries", caption = "Source: GISAID") +
+  scale_fill_continuous(name = "Sequences", low = "white", high = "blue", 
+                        limits = c(0, 3000), breaks = c(0, 500, 1000, 2000, 3000)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_sequences_on_GISAID_Map.pdf")   
+
+
+#  Sequences submitted per 1000 Cases reported
+
+fig1b <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = sequence_per_100cases*10), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "SARS-CoV2 sequences submitted per 1000 cases reported", caption = "Source: GISAID and worldometer") +
+  scale_fill_continuous(name = "Sequences per \n 1,000 cases", low = "white", high = "blue", 
+                        limits = c(0, 125), breaks = c(0, 25, 50, 75, 100, 125)) +
+  theme_void()
+
+#Combine Figures A and B
+pdf("plots/Africa_sequeunces_submitted_map.pdf")
+grid.arrange(fig1a, fig1b, nrow = 1)
+dev.off()
+
+jpeg("plots/Africa_sequeunces_submitted_map.jpg")
+grid.arrange(fig1a, fig1b, nrow = 1)
+dev.off()
+##############Figure1 ends
+
+#Figure 2 on page 24     Proportional Stacked chart of Top 5% lineages in Africa
+df <- as.data.frame(raw_data)
+afr_data <- na.omit(df) %>% filter (region == "Africa") %>% select(date, pangolin_lineage) %>% filter(pangolin_lineage == c("B.1.5", "B.1", "B.1.1", "B.1.1.206", "B.1.351")) %>% group_by(date, pangolin_lineage) %>% summarise(N = n()) %>% mutate(percentage = N/sum(N))
+
+fig2 <- ggplot(afr_data, aes(x = date, y = percentage, fill = pangolin_lineage)) +
+  geom_area(size = 0.25, color = 'white') +
+  labs(y = "Percentage", x = "Date") 
+#labs(y = "Percentage", x = "Date", caption = "GISAID, 2020") 
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_prop_stacked_area1.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_prop_stacked_area1.jpg", height = 120, width = 200, units = 'mm')
+
+#Figure 2 ends
+
+
+#3 Figure 3: Number of COVID-19 reported cases and deaths per 100,000 population in the different continents.
+
+## read in data from our world in data
+library(readxl)
+owid <- read_excel("owid-covid-data.xlsx") ##Updated data
+owid <- as.data.frame(owid)
+owid$date <- as.Date(owid$date) 
+
+## Filter from incidence case till 7th January 2021
+library(dplyr)
+
+## filter from incidence case till 7th January 2021 and select new cases, new deaths, new tests. Add these together to get the totals
+owid_till_070121 <- owid %>% filter(date <= "2021-01-07") %>% select(continent, location, new_cases, new_deaths, new_tests)
+
+## Sum up the new cases, new deaths and tests; and group by continent
+owid_continental <- owid_till_070121 %>% group_by(continent) %>% na.omit() %>% summarise(Cases = sum(new_cases), Deaths = sum(new_deaths), Tests = sum(new_tests))
+
+## Get the population of each continent and remove the multiple rows in country names under location
+owid_cont_pop <- owid %>% filter(date <= "2021-01-07") %>% select(continent, location, population) %>% distinct(location, .keep_all = TRUE) %>% group_by(continent) %>% na.omit() %>% summarise(Population = sum(population))
+
+## Merge population and cases, deaths and tests data
+OWID_data <- left_join(owid_continental, owid_cont_pop, by = "continent")
+OWID_data <- as.data.frame(OWID_data)
+
+## Add cases, death and test per 100K population
+OWID_data <- OWID_data %>% mutate(Cases_100K = (Cases/Population)*100000, Deaths_100K = (Deaths/Population)*100000, Tests_100K = (Tests/Population)*100000)
+
+global_cases_per100K <- (sum(OWID_data$Cases)/sum(OWID_data$Population))*100000  ## This is 894.84
+global_deaths_per100K <- (sum(OWID_data$Deaths)/sum(OWID_data$Population))*100000 ## This 18.73
+
+
+## Per 100,000 Cases and Deaths for each continent and globally 
+ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
+  geom_bar(stat = "identity") +
+  geom_point(aes(y = Deaths_100K*40), size = 5, color = "orange") +
+  geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1) +
+  geom_hline(yintercept = global_deaths_per100K*40, col = 'orange', size = 1) + 
+  scale_y_continuous("Cases per 100,000", sec.axis = sec_axis(~ . /46, name = "Deaths per 100,000")) +
+  theme(
+    axis.title.y = element_text( size=13),
+    axis.title.y.right = element_text(color = "orange", size=13)
+  ) +
+  labs(x = "Continent")
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.pdf", height = 140, width = 200, units = 'mm')
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.jpg", height = 140, width = 200, units = 'mm')
+
+## Is there a correlation between some parameters?
+library(corrplot)
+owid_cor <- cor(OWID_data[,2:5])
+corrplot(owid_cor, type = "upper", order = "hclust", sig.level = 0.05, insig = "blank")
+
+### Figure 3 ends
+
+## Figure 4
+
+fig4a <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = SARSCoV2_Cases), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "Absolute number of COVID-19 reported cases in African countries", caption = "Source: worldometer") +
+  #labs(caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Cases", low = "white", high = "blue", 
+                        limits = c(0, 800000), breaks = c(0, 10000, 100000, 250000, 500000, 750000)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_cases_Map.pdf")   
+
+fig4b <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = cases_per100H), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "COVID-19 reported cases per 100,000 \n population in African countries", caption = "Source: worldometer") +
+  #labs(caption = "Source: worldometer, 2021") +
+  scale_fill_continuous(name = "Cases per \n 100,000 pop", low = "white", high = "blue", 
+                        limits = c(0, 1500), breaks = c(0, 500, 1000, 1500)) +
+  theme_void()
+
+#Figure 4
+pdf("updated_output/Cases_in_africa_map.pdf")
+grid.arrange(fig4a, fig4b, nrow = 1)
+dev.off()
+
+jpeg("updated_output/Cases_in_africa_map.jpg")
+grid.arrange(fig4a, fig4b, nrow = 1)
+dev.off()
+
+## Figure 4 ends here
+
+
+## Figure 5 page 26 : Reported Deaths
+
+
+##### Total Deaths from SARS-CoV2
+fig5a <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = Total_Deaths), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "Deaths from SARS-CoV-2 in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Deaths", low = "white", high = "blue", 
+                        limits = c(0, 30000), breaks = c(0, 500, 5000, 10000, 20000, 30000)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_Deaths_Map.pdf")   
+
+#figure 9b Deaths per 1000 cases
+fig5b <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = deaths_per100cases*10), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "Deaths per 1000 SARS-CoV-2 cases in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Deaths per \n 1,000 cases", low = "white", high = "blue", 
+                        limits = c(0, 100), breaks = c(0, 10, 20, 30, 40, 50, 60, 100)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_deaths_per100cases_Map.pdf")   
+#Figure 5
+pdf("plots/Africa_reported_deaths_map.pdf")
+grid.arrange(fig5a, fig5b, nrow = 1)
+dev.off()
+
+jpeg("plots/Africa_reported_deaths_map.jpg")
+grid.arrange(fig9a, fig9b, nrow = 1)
+dev.off()
+
+##End of Figure 5
+
+
+##Figure 6 No ofl Tests per 100,000 Population
+
+#Tests
+fig6a <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = T_Tests), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Tests", low = "white", high = "blue", 
+                        limits = c(0, 6000000), breaks = c(0, 250000, 1000000, 2500000, 5000000)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
+
+
+#Figure 6b
+#Test per 100H
+
+fig6b <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = tests_per100H), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Tests per \n 100,000 pop", low = "white", high = "blue", 
+                        limits = c(0, 25000), breaks = c(0, 1000, 5000, 10000, 15000, 20000, 25000)) +
+  theme_void()
+#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
+
+pdf("plots/Africa_tests_map.pdf")
+grid.arrange(fig6a, fig6b, nrow = 1)
+dev.off()
+
+jpeg("plots/Africa_tests_map.jpg")
+grid.arrange(fig6a, fig6b, nrow = 1)
+dev.off()
+## Figure 6 ends
+
+#Figure 7 page 28: Positivity Rate in Africa
+# Positive per 1000 Tests
+
+
+Figure7_Positive_per1000 <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
+  #labs(caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Positive tests", low = "white", high = "blue", 
+                        limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
+  theme_void()
+ggsave(file = "plots/Africa_positive_per_1000_Map.pdf")   
+
+Figure7_Positive_per1000 <- ggplot(africa_map_details) +
+  geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
+  coord_map("bonne", parameters = 45) +
+  #labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
+  #labs(caption = "Source: worldometer") +
+  scale_fill_continuous(name = "Positive tests", low = "white", high = "blue", 
+                        limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
+  theme_void()
+ggsave(file = "plots/Africa_positive_per_1000_Map.jpg")   
+
+## Figure 7 ends
+
+##Supplementary Figure 1 page 39: Diversity of NextStrain Clades across continents
+
+
+
+
+
+
+
+## Figure 5 ends
+
+
 #1  Bar chart of sequences submitted on GISAID from different continents
 
 sequences_continent_bar <- ggplot(sequence_continent, aes(y = reorder(region, sequences), x = sequences))  +
@@ -168,39 +405,6 @@ sequences_continent_bar <- ggplot(sequence_continent, aes(y = reorder(region, se
   theme(plot.title = element_text(size = 15))
 ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Fig1_Continent_sequences_bar.pdf", height = 120, width = 200, units = 'mm')
 ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Fig1_Continent_sequences_bar.jpg", height = 120, width = 200, units = 'mm')
-##############
-
-#2  Africa Map showing SARS-CoV2 sequences submitted in GISAID from various African countries.
-
-fig8a <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = sequences), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "SAR-CoV-2 Sequences submitted to GISAID from African countries", caption = "Source: GISAID") +
-  scale_fill_continuous(name = "Sequences", low = "white", high = "green", 
-                        limits = c(0, 3000), breaks = c(0, 500, 1000, 2000, 3000)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_sequences_on_GISAID_Map.pdf")   
-
-
-#  Sequences submitted per 1000 Cases reported
-
-fig8b <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = sequence_per_100cases*10), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "SARS-CoV2 sequences submitted per 1000 cases reported", caption = "Source: GISAID and worldometer") +
-  scale_fill_continuous(name = "Sequences per \n 1,000 cases", low = "white", high = "green", 
-                        limits = c(0, 125), breaks = c(0, 25, 50, 75, 100, 125)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_seqs_per100_cases_GISAID_Map.pdf")   
-
-#Figure 8
-pdf("plots/Africa_sequeunces_submitted_map.pdf")
-grid.arrange(fig8a, fig8b, nrow = 1)
-dev.off()
-
-jpeg("plots/Africa_sequeunces_submitted_map.jpg")
-grid.arrange(fig8a, fig8b, nrow = 1)
-dev.off()
 ##############
 
 #3  
@@ -274,18 +478,7 @@ write.csv()
 
  #################
  
- #5      Proportional Stacked chart of Top 5% lineages in Africa
- df <- as.data.frame(raw_data)
- afr_data <- na.omit(df) %>% filter (region == "Africa") %>% select(date, pangolin_lineage) %>% filter(pangolin_lineage == c("B.1.5", "B.1", "B.1.1", "B.1.1.206", "B.1.351")) %>% group_by(date, pangolin_lineage) %>% summarise(N = n()) %>% mutate(percentage = N/sum(N))
  
- fig4b <- ggplot(afr_data, aes(x = date, y = percentage, fill = pangolin_lineage)) +
-   geom_area(size = 0.15, color = 'white') +
-   labs(y = "Percentage", x = "Date") 
- #labs(y = "Percentage", x = "Date", caption = "GISAID, 2020") 
- ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/fig4B_africa_prop_stacked_area1.pdf", height = 120, width = 200, units = 'mm')
- ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/fig4B_africa_prop_stacked_area1.jpg", height = 120, width = 200, units = 'mm')
-###################
-
  
  #########
  #6 Bar chart of Global cases per 100,000 population and global average
@@ -388,127 +581,9 @@ ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/update
 
 
 
-fig7a <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = SARSCoV2_Cases), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "Absolute number of COVID-19 reported cases in African countries", caption = "Source: worldometer") +
-  #labs(caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Cases", low = "white", high = "red", 
-                        limits = c(0, 800000), breaks = c(0, 10000, 100000, 250000, 500000, 750000)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_cases_Map.pdf")   
-
-fig7b <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = cases_per100H), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "COVID-19 reported cases per 100,000 \n population in African countries", caption = "Source: worldometer") +
-  #labs(caption = "Source: worldometer, 2021") +
-  scale_fill_continuous(name = "Cases per \n 100,000 pop", low = "white", high = "red", 
-                        limits = c(0, 1500), breaks = c(0, 500, 1000, 1500)) +
-  theme_void()
-
-#Figure 7
-pdf("updated_output/Cases_in_africa_map.pdf")
-grid.arrange(fig7a, fig7b, nrow = 1, top ="COVID-19 cases reported in African countries")
-dev.off()
-
-jpeg("updated_output/Cases_in_africa_map.jpg")
-grid.arrange(fig7a, fig7b, nrow = 1)
-dev.off()
-
-
 #############
 
 
-
-###Deaths
-#Figure 9
-
-##### Total Deaths from SARS-CoV2
-fig9a <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = Total_Deaths), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "Deaths from SARS-CoV-2 in Africa", caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Deaths", low = "white", high = "red", 
-                        limits = c(0, 30000), breaks = c(0, 500, 5000, 10000, 20000, 30000)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_Deaths_Map.pdf")   
-
-#figure 9b Deaths per 1000 cases
-fig9b <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = deaths_per100cases*10), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "Deaths per 1000 SARS-CoV-2 cases in Africa", caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Deaths per \n 1,000 cases", low = "white", high = "red", 
-                        limits = c(0, 100), breaks = c(0, 10, 20, 30, 40, 50, 60, 100)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_deaths_per100cases_Map.pdf")   
-#Figure 9
-pdf("updated_output/Africa_reported_deaths_map.pdf")
-grid.arrange(fig9a, fig9b, nrow = 1, top = "Reported deaths from SARS-CoV-2 in African countries", bottom = "worldometer")
-dev.off()
-
-jpeg("updated_output/Africa_reported_deaths_map.jpg")
-grid.arrange(fig9a, fig9b, nrow = 1)
-dev.off()
-
-######## Total Tests per 100,000 Population
-
-#Figure 10
-#Tests
-fig10a <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = T_Tests), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Tests", low = "white", high = "blue", 
-                        limits = c(0, 6000000), breaks = c(0, 250000, 1000000, 2500000, 5000000)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
-
-
-#Figure 10b
-#Test per 100H
-
-fig10b <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = tests_per100H), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "SARS-CoV2 tests per 100,000 population in Africa", caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Tests per \n 100,000 pop", low = "white", high = "blue", 
-                        limits = c(0, 25000), breaks = c(0, 1000, 5000, 10000, 15000, 20000, 25000)) +
-  theme_void()
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
-
-pdf("updated_output/Africa_tests_map.pdf")
-grid.arrange(fig10a, fig10b, nrow = 1, top = "SARS-CoV-2 tests conducted in African countries", bottom = "worldometer")
-dev.off()
-
-jpeg("updated_output/Africa_tests_map.jpg")
-grid.arrange(fig10a, fig10b, nrow = 1)
-dev.off()
-
-######## Positive per 1000 Tests
-#figure 11
-#Positive per 1000
-
-Figure11_Positive_per1000 <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
-  #labs(caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Positive tests", low = "white", high = "red", 
-                        limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
-  theme_void()
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_positive_per_1000_Map.pdf")   
-
-Figure11_Positive_per1000 <- ggplot(africa_map_details) +
-  geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
-  coord_map("bonne", parameters = 45) +
-  #labs(title = "Number of positive tests per 1000 SARS-CoV-2 in African countries", caption = "Source: worldometer") +
-  #labs(caption = "Source: worldometer") +
-  scale_fill_continuous(name = "Positive tests", low = "white", high = "red", 
-                        limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
-  theme_void()
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_positive_per_1000_Map.jpg")   
 
 
 ##To list all the Pango lineages circulating in Africa
@@ -681,70 +756,6 @@ sum(str_count(strains_Nigeria, "AB")) #enter the state code of each to know the 
 
 #### Added at the tail end of the project
 ## This was aimed to add deaths per 100,000 cases for each continent
-
-## read in data from our world in data
-library(readxl)
-owid <- read_excel("owid-covid-data.xlsx")
-owid <- as.data.frame(owid)
-owid$date <- as.Date(owid$date) 
-
-## Filter from incidence case till 7th January 2021
-library(dplyr)
-
-## filter from incidence case till 7th January 2021 and select new cases, new deaths, new tests. Add these together to get the totals
-owid_till_070121 <- owid %>% filter(date <= "2021-01-07") %>% select(continent, location, new_cases, new_deaths, new_tests)
-
-## Sum up the new cases, new deaths and tests; and group by continent
-owid_continental <- owid_till_070121 %>% group_by(continent) %>% na.omit() %>% summarise(Cases = sum(new_cases), Deaths = sum(new_deaths), Tests = sum(new_tests))
-
-## Get the population of each continent and remove the multiple rows in country names under location
-owid_cont_pop <- owid %>% filter(date <= "2021-01-07") %>% select(continent, location, population) %>% distinct(location, .keep_all = TRUE) %>% group_by(continent) %>% na.omit() %>% summarise(Population = sum(population))
-
-## Merge population and cases, deaths and tests data
-OWID_data <- left_join(owid_continental, owid_cont_pop, by = "continent")
-OWID_data <- as.data.frame(OWID_data)
-
-## Add cases, death and test per 100K population
-OWID_data <- OWID_data %>% mutate(Cases_100K = (Cases/Population)*100000, Deaths_100K = (Deaths/Population)*100000, Tests_100K = (Tests/Population)*100000)
-
-global_cases_per100K <- (sum(OWID_data$Cases)/sum(OWID_data$Population))*100000  ## This is 894.84
-global_deaths_per100K <- (sum(OWID_data$Deaths)/sum(OWID_data$Population))*100000 ## This 18.73
-
-
-
-
-
-#  Per 100,000 Cases in each Continent with Global Mean horizontal line 
-# using the new data from our world in data
-
-g#gplot(OWID_data, aes(x = reorder(continent, Cases_100K), y = Cases_100K))  +
-  #geom_bar(stat = "identity", fill = 'steelblue') +
-  #geom_text(aes(label = round(Cases_100K)), position = position_dodge(width = 1),vjust = 0.5) +
-  #labs(title = "COVID-19 cases per 100,000 across the continent", y = "Number of cases", x = "Continents") +
-#geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1)
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.pdf", height = 120, width = 200, units = 'mm')
-#ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Continent_Cases_per100K.jpg", height = 120, width = 200, units = 'mm')
-
-
-## Per 100,000 Cases and Deaths for each continent and globally 
-ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
-  geom_bar(stat = "identity") +
-  geom_point(aes(y = Deaths_100K*40), size = 5, color = "orange") +
-  geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1) +
-  geom_hline(yintercept = global_deaths_per100K*40, col = 'orange', size = 1) + 
-  scale_y_continuous("Cases per 100,000", sec.axis = sec_axis(~ . /46, name = "Deaths per 100,000")) +
-  theme(
-    axis.title.y = element_text( size=13),
-    axis.title.y.right = element_text(color = "orange", size=13)
-  ) +
-  labs(x = "Continent")
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.pdf", height = 140, width = 200, units = 'mm')
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.jpg", height = 140, width = 200, units = 'mm')
-
-## Is there a correlation between some parameters?
-library(corrplot)
-owid_cor <- cor(OWID_data[,2:5])
-corrplot(owid_cor, type = "upper", order = "hclust", sig.level = 0.05, insig = "blank")
 
 
 
