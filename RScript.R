@@ -732,7 +732,7 @@ ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
   geom_point(aes(y = Deaths_100K*40), size = 5, color = "orange") +
   geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1) +
   geom_hline(yintercept = global_deaths_per100K*40, col = 'orange', size = 1) + 
-  scale_y_continuous("Cases per 100,000", sec.axis = sec_axis(~ . /46, name = "Death per 100,000")) +
+  scale_y_continuous("Cases per 100,000", sec.axis = sec_axis(~ . /46, name = "Deaths per 100,000")) +
   theme(
     axis.title.y = element_text( size=13),
     axis.title.y.right = element_text(color = "orange", size=13)
