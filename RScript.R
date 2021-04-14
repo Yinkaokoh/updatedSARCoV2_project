@@ -1,6 +1,6 @@
 ## Epidemiology and genetic diversity of SARS-CoV-2 lineages circulating in Africa
 
-# A Journal article SARS-CoV2 
+# A Journal article SARS-CoV2 in collaboration with Nidia (USA), Elijah (Nigeria), Nicholas (Ghana)
 # Script written by OKOH Olayinka Sunday
 # Updated on 14th April 2021
 
