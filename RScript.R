@@ -181,7 +181,7 @@ fig1b <- ggplot(africa_map_details) +
   theme_void()
 
 #Combine Figures A and B
-pdf("plots/Africa_sequeunces_submitted_map.pdf")
+pdf("plots/Fig1_Africa_sequeunces_submitted_map.pdf")
 grid.arrange(fig1a, fig1b, nrow = 1)
 dev.off()
 
@@ -198,7 +198,7 @@ fig2 <- ggplot(afr_data, aes(x = date, y = percentage, fill = pangolin_lineage))
   geom_area(size = 0.25, color = 'white') +
   labs(y = "Percentage", x = "Date") 
 #labs(y = "Percentage", x = "Date", caption = "GISAID, 2020") 
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_prop_stacked_area1.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Fig2_Africa_prop_stacked_area1.pdf", height = 120, width = 200, units = 'mm')
 ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Africa_prop_stacked_area1.jpg", height = 120, width = 200, units = 'mm')
 
 #Figure 2 ends
@@ -237,7 +237,7 @@ global_deaths_per100K <- (sum(OWID_data$Deaths)/sum(OWID_data$Population))*10000
 
 ## Per 100,000 Cases and Deaths for each continent and globally 
 ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", fill = "blue") +
   geom_point(aes(y = Deaths_100K*40), size = 5, color = "orange") +
   geom_hline(yintercept = global_cases_per100K, col = 'red', size = 1) +
   geom_hline(yintercept = global_deaths_per100K*40, col = 'orange', size = 1) + 
@@ -247,8 +247,8 @@ ggplot(OWID_data, aes(x =reorder(continent, Cases_100K), y = Cases_100K)) +
     axis.title.y.right = element_text(color = "orange", size=13)
   ) +
   labs(x = "Continent")
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.pdf", height = 140, width = 200, units = 'mm')
-ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/plots/Cases_and_Death_per100K.jpg", height = 140, width = 200, units = 'mm')
+ggsave(file = "plots/Fig3_Cases_and_Death_per100K.pdf", height = 140, width = 200, units = 'mm')
+ggsave(file = "plots/Cases_and_Death_per100K.jpg", height = 140, width = 200, units = 'mm')
 
 ## Is there a correlation between some parameters?
 library(corrplot)
@@ -279,11 +279,11 @@ fig4b <- ggplot(africa_map_details) +
   theme_void()
 
 #Figure 4
-pdf("updated_output/Cases_in_africa_map.pdf")
+pdf("plots/Fig4_Cases_in_africa_map.pdf")
 grid.arrange(fig4a, fig4b, nrow = 1)
 dev.off()
 
-jpeg("updated_output/Cases_in_africa_map.jpg")
+jpeg("plots/Cases_in_africa_map.jpg")
 grid.arrange(fig4a, fig4b, nrow = 1)
 dev.off()
 
@@ -313,12 +313,12 @@ fig5b <- ggplot(africa_map_details) +
   theme_void()
 #ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_deaths_per100cases_Map.pdf")   
 #Figure 5
-pdf("plots/Africa_reported_deaths_map.pdf")
+pdf("plots/Fig5_Africa_reported_deaths_map.pdf")
 grid.arrange(fig5a, fig5b, nrow = 1)
 dev.off()
 
 jpeg("plots/Africa_reported_deaths_map.jpg")
-grid.arrange(fig9a, fig9b, nrow = 1)
+grid.arrange(fig5a, fig5b, nrow = 1)
 dev.off()
 
 ##End of Figure 5
@@ -349,7 +349,7 @@ fig6b <- ggplot(africa_map_details) +
   theme_void()
 #ggsave(file = "/home/olayinka/Documents/R_Analysis/SARS-CoV2_Project_2021/updatedSARCoV2_project/updated_output/Africa_test_100H_Map.pdf")   
 
-pdf("plots/Africa_tests_map.pdf")
+pdf("plots/Fig6_Africa_tests_map.pdf")
 grid.arrange(fig6a, fig6b, nrow = 1)
 dev.off()
 
@@ -370,7 +370,7 @@ Figure7_Positive_per1000 <- ggplot(africa_map_details) +
   scale_fill_continuous(name = "Positive tests", low = "white", high = "blue", 
                         limits = c(0, 250), breaks = c(0, 50, 100, 150, 200, 250)) +
   theme_void()
-ggsave(file = "plots/Africa_positive_per_1000_Map.pdf")   
+ggsave(file = "plots/Fig7_Africa_positive_per_1000_Map.pdf")   
 
 Figure7_Positive_per1000 <- ggplot(africa_map_details) +
   geom_polygon(aes(long, lat, group = group, fill = positive_per100tests*10), color = 'black') +
@@ -392,7 +392,7 @@ S_fig1 <- ggplot(next_strain_clade_continent, aes(y = Nextstrain_clade, x = Numb
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(y = "NextStrain Clade", x = "Number of sequences") +
   facet_wrap(~ region) 
-ggsave(file = "plots/Continent_nxtstrain_bar.pdf")
+ggsave(file = "plots/Sup_Fig1_Continent_nxtstrain_bar.pdf")
 ggsave(file = "plots/Continent_nxtstrain_bar.jpg")
 
 
@@ -405,7 +405,7 @@ lineage_diversity_top_1 <- ggplot(lineage_top_1, aes(y = reorder(pangolin_lineag
   #geom_text(aes(label = paste0(round(percentage), "%")), position = position_dodge(width = 1),vjust = 0.5) +
   labs( y = "Pango lineage", x = "Number of sequences", caption = "Source: GISAID, 2020") +
   facet_wrap(~ region) 
-ggsave(file = "plots/Continent_top1_lineage_bar.pdf", height = 120, width = 200, units = 'mm' )
+ggsave(file = "plots/Sup_Fig2_Continent_top1_lineage_bar.pdf", height = 120, width = 200, units = 'mm' )
 ggsave(file = "plots/Continent_top1_lineage_bar.jpg", height = 120, width = 200, units = 'mm' )
 
 
@@ -423,9 +423,9 @@ ggcorrplot(cor(OWID_data[,2:5]), p.mat = cor_pmat(OWID_data[,2:5]), hc.order = T
 
 
 S_Figure3<- ggplot(OWID_data, aes(x = reorder(continent, Cases), y = Cases/1000000)) + 
-  geom_bar(stat = "identity")+
+  geom_bar(stat = "identity", fill = "steelblue")+
   labs(x = "Continents", y = "Cases (Million)")
-ggsave(file = "plots/new_absolute_Cases.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "plots/Supp_Fig3_new_absolute_Cases.pdf", height = 120, width = 200, units = 'mm')
 ggsave(file = "plots/new_absolute_Cases.jpg", height = 120, width = 200, units = 'mm')
 
 
@@ -467,19 +467,19 @@ S_fig4a <- ggplot(afr_lineage_top_10, aes(y = reorder(pangolin_lineage, N), x = 
   geom_bar(stat = "identity", fill = "steelblue") +
   geom_text(aes(label = paste0(round(percentage, 2), "%")), position = position_dodge(width = 1),vjust = 0.5) +
   labs(y = "Pango lineage", x = "Number of sequences")
-ggsave(file = "plots/Africa_top10_lineage_bar.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "plots/Supp_Fig4_Africa_top10_lineage_bar.pdf", height = 120, width = 200, units = 'mm')
 ggsave(file = "plots/Africa_top10_lineage_bar.jpg", height = 120, width = 200, units = 'mm')
 
 #Supplemenatary Figure 4 ends
 
 ## Supplementary Figure 5 page 42: Number of sequences submitted
 sequences_continent_bar <- ggplot(sequence_continent, aes(y = reorder(region, sequences), x = sequences))  +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", fill = "steelblue") +
   geom_text(aes(label = paste0(percentage, "%")), position = position_dodge(width = 1),vjust = 0.5) +
   #labs(title = "SARS-CoV-2 sequences submitted on GISAID", y = "Continents", x = "Number of sequences submitted", caption = "Source: GISAID, 2020" ) +
   labs(y = "Continents", x = "Number of sequences submitted") +
   theme(plot.title = element_text(size = 15))
-ggsave(file = "plots/Continent_sequences_bar.pdf", height = 120, width = 200, units = 'mm')
+ggsave(file = "plots/Supp_FIg5_Continent_sequences_bar.pdf", height = 120, width = 200, units = 'mm')
 ggsave(file = "plots/Continent_sequences_bar.jpg", height = 120, width = 200, units = 'mm')
 
 #Supplementary Figure 5 ends
