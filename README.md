@@ -29,4 +29,4 @@ Okoh Olayinka Sunday 1,#, Nicholas Israel Nii-Trebi 2,#, Abdulrokeeb Jakkari 3, 
 
 13 Fogarty International Center, National Institutes of Health, Bethesda, Maryland, USA
 
-
+Key words: SARS-CoV-2, COVID-19, lineages, motifs, mutations, Africa, genomic diversity, epidemiology 
