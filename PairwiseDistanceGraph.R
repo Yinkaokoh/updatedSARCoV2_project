@@ -9,7 +9,7 @@ library(gridExtra)
 library(ggplot2)
 
 
-PairwiseDistances <- import("/Volumes/NT5TB/NT1_23Dec17/Postdoc/MountSinaiNIH/Conferences/NIH/ComparativeGenomics_Nigeria_Aug20/Project1/8TosinTitusOlaniran/15Mar21/Regions_Within.csv")
+PairwiseDistances <- import("Regions_Within.csv")
 
 unique(PairwiseDistances$Continent)
 
