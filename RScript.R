@@ -2,7 +2,7 @@
 
 # A Journal article SARS-CoV2 
 # Script written by OKOH Olayinka Sunday
-# 19th March, 2021
+# Updated on 14th April 2021
 
 #Dataset for lineages were downloaded from GISAID sent to me by Nidia
 # Population data was loaded from worldometer.com
